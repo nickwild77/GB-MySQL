@@ -1,0 +1,149 @@
+DROP DATABASE IF EXISTS amediateka;
+CREATE DATABASE amediateka;
+
+USE amediateka;
+
+DROP TABLE IF EXISTS genre;
+CREATE TABLE genre (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(30) COMMENT 'Название жанра',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Каталог жанров';
+
+DROP TABLE IF EXISTS country;
+CREATE TABLE country (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  country_name VARCHAR(30) COMMENT 'Название страны',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Каталог стран производителей';
+
+DROP TABLE IF EXISTS movies;
+CREATE TABLE movies (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL COMMENT 'Название фильма',
+  genre_id INT UNSIGNED DEFAULT NULL COMMENT 'Жанр',
+  country_id INT UNSIGNED DEFAULT NULL COMMENT 'Страна',
+  directors_id INT UNSIGNED DEFAULT NULL COMMENT 'Режиссер',
+  actors_id INT UNSIGNED DEFAULT NULL COMMENT 'Актеры',
+  relase_date DATE DEFAULT NULL COMMENT 'Дата выпуска',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Каталог фильмов';
+
+DROP TABLE IF EXISTS serials;
+CREATE TABLE serials (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(50) NOT NULL COMMENT 'Название сериала',
+  genre_id INT UNSIGNED DEFAULT NULL COMMENT 'Жанр',
+  country_id INT UNSIGNED DEFAULT NULL COMMENT 'Страна',
+  directors_id INT UNSIGNED DEFAULT NULL COMMENT 'Режиссер',
+  actors_id INT UNSIGNED DEFAULT NULL COMMENT 'Актеры',
+  relase_date DATE DEFAULT NULL COMMENT 'Дата выпуска',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Каталог сериалов';
+
+DROP TABLE IF EXISTS directors;
+CREATE TABLE directors (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL COMMENT 'Имя',
+  last_name VARCHAR(100) NOT NULL COMMENT 'Фамилия',
+  birthday DATE DEFAULT NULL COMMENT 'Дата рождения',
+  gender CHAR(1) NOT NULL COMMENT 'Пол',
+  movies_id INT UNSIGNED DEFAULT NULL COMMENT 'Фильмы',
+  serials_id INT UNSIGNED DEFAULT NULL COMMENT 'Сериалы',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (movies_id) REFERENCES movies (id),
+  FOREIGN KEY (serials_id) REFERENCES serials (id)
+) COMMENT = 'Каталог режиссеров';
+
+DROP TABLE IF EXISTS actors;
+CREATE TABLE actors (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL COMMENT 'Имя',
+  last_name VARCHAR(100) NOT NULL COMMENT 'Фамилия',
+  birthday DATE DEFAULT NULL COMMENT 'Дата рождения',
+  gender CHAR(1) NOT NULL COMMENT 'Пол',
+  movies_id INT UNSIGNED DEFAULT NULL COMMENT 'Фильмы',
+  serials_id INT UNSIGNED DEFAULT NULL COMMENT 'Сериалы',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (movies_id) REFERENCES movies (id),
+  FOREIGN KEY (serials_id) REFERENCES serials (id)
+) COMMENT = 'Каталог актеров';
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  first_name VARCHAR(100) NOT NULL COMMENT 'Имя',
+  last_name VARCHAR(100) NOT NULL COMMENT 'Фамилия',
+  gender CHAR(1) NOT NULL COMMENT 'Пол',
+  email VARCHAR(100) NOT NULL COMMENT 'Почта',
+  phone VARCHAR(100) NOT NULL COMMENT 'Телефон',
+  birthday DATE DEFAULT NULL COMMENT 'Дата рождения',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY email (email),
+  UNIQUE KEY phone (phone)
+) COMMENT = 'Пользователи';
+
+DROP TABLE IF EXISTS profiles;
+CREATE TABLE profiles (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  user_id INT UNSIGNED DEFAULT NULL,
+  nick_name VARCHAR(30) NOT NULL COMMENT 'Никнейм пользователя',
+  subscribe_id INT UNSIGNED DEFAULT NULL,
+  subscribe_status INT UNSIGNED DEFAULT NULL,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY nick_name (nick_name)
+) COMMENT = 'Профили клиентов';
+
+DROP TABLE IF EXISTS subscribes;
+CREATE TABLE subscribes (
+  id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  subscribe_name VARCHAR(30) COMMENT 'Название подписки',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) COMMENT = 'Каталог вариантов подписки';
+
+DROP TABLE IF EXISTS subscribes_list;
+CREATE TABLE subscribes_list (
+  subscribe_id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ID подписки',
+  profile_id INT UNSIGNED NOT NULL COMMENT 'Ссылка на профиль пользователя',
+  subscribe_type INT UNSIGNED NOT NULL COMMENT 'Ссылка на вариант подписки',
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (subscribe_id, profile_id) COMMENT 'Составной первичный ключ',
+  FOREIGN KEY (profile_id) REFERENCES profiles (id),
+  FOREIGN KEY (subscribe_type) REFERENCES subscribes (id)
+) COMMENT = 'Список пользовательских подписок';
+
+
+ALTER TABLE movies
+  ADD FOREIGN KEY (genre_id) REFERENCES genre (id),
+  ADD FOREIGN KEY (country_id) REFERENCES country (id),
+  ADD FOREIGN KEY (directors_id) REFERENCES directors (id),
+  ADD FOREIGN KEY (actors_id) REFERENCES actors (id);
+
+ALTER TABLE serials
+  ADD FOREIGN KEY (genre_id) REFERENCES genre (id),
+  ADD FOREIGN KEY (country_id) REFERENCES country (id),
+  ADD FOREIGN KEY (directors_id) REFERENCES directors (id),
+  ADD FOREIGN KEY (actors_id) REFERENCES actors (id);
+
+ALTER TABLE profiles
+  ADD FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE,
+  ADD FOREIGN KEY (subscribe_id) REFERENCES subscribes_list (subscribe_id),
+  ADD FOREIGN KEY (subscribe_status) REFERENCES subscribes (id);
+ 
+DROP TABLE IF EXISTS logs;
+CREATE TABLE logs (
+	id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+	record_datetime DATETIME DEFAULT CURRENT_TIMESTAMP,
+	table_name VARCHAR(255),
+	event VARCHAR(255)
+) ENGINE ARCHIVE;
